@@ -1,0 +1,130 @@
+<template>
+    <div style="background-color: white;">
+        <lightning-layout multiple-rows>
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="5" large-device-size="5">
+                <div>
+                    <img src="https://ssl.gstatic.com/images/branding/product/2x/hh_drive_96dp.png" style="width:25%;">
+                    <span style="font-weight:bold" class="slds-var-p-around_x-large slds-text-heading_large">Google
+                        Drive</span>
+                </div>
+
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3">
+                <template if:true={signin}>
+                    <div onkeyup={handleKeyUp} class="slds-var-p-around_medium">
+                        <lightning-input name="enter-search" label="Search when user hits the 'enter' key" type="search"
+                            value={queryTerm}></lightning-input>
+                    </div>
+
+                    <lightning-button-icon class="slds-align_absolute-center slds-p-around_small slds-m-left_xx-small"
+                        icon-name="utility:refresh" size="medium" alternative-text="Reload Data" onclick={refreshData}>
+                    </lightning-button-icon>
+                </template>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4">
+                <div>
+                    <template if:true={signin}>
+                        <lightning-file-upload label="Upload a File less than 6mb" title="Upload"
+                            icon-name="utility:upload"
+                            class="slds-p-around_small slds-align_absolute-center slds-text-heading_small"
+                            name="fileUploader" accept={acceptedFormats} onuploadfinished={handleUploadFinished}>
+                        </lightning-file-upload>
+                    </template>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
+    <br>
+    <div style="background-color: white;">
+        <template if:false={signin}>
+            <a class="slds-p-around_small slds-text-heading_medium slds-align_absolute-center slds-button slds-button_destructive"
+                href="https://concretio38-dev-ed.my.salesforce.com/services/auth/oauth/Google_Drive"
+                onclick={handleAnchor} target="_blank">
+                Authenticate
+            </a>
+            <p class="slds-text-heading_medium">{msg}</p>
+        </template>
+        <template if:true={signin}>
+
+            <template if:true={loaded}>
+                <template if:true={searchedDataLen}>
+                    <div class="slds-p-around_small slds-border_top slds-border_bottom slds-border_right slds-border_left">
+                        <c-pagination records={searchedData}  onupdate={updatePaginationHandler}>
+                        </c-pagination>
+                    </div>
+                </template>
+                <lightning-layout multiple-rows>
+                    <template if:true={searchedDataLen}>
+                        <template for:each={visibleData} for:item='item'>
+                            <lightning-layout-item key={item.id} size="12" small-device-size="6" medium-device-size="4"
+                                large-device-size="4" padding="around-medium">
+                                <div class="slds-size_full">
+                                    <lightning-card title={item.name}>
+                                        <hr>
+                                        <div style="background-color: rgb(218,220,224);">
+                                            <img src={item.thumbnailLink}
+                                                class="slds-align_absolute-center slds-var-p-around_x-small"
+                                                alt="No Preview Available" />
+                                        </div>
+                                        <div class="slds-border_top slds-border_bottom slds-var-p-aro   aund_small">
+                                            <img src={item.iconLink} class="slds-p-around_small">
+                                            <p class="slds-float_right slds-text-heading_small slds-p-around_small">
+                                                {item.displayname}</p>
+                                        </div>
+                                        <div class="slds-border_top slds-border_bottom slds-var-p-around_small">
+                                            <template if:true={item.downloadLink}>
+                                                <lightning-button-icon class="slds-p-around_small"
+                                                    icon-name="utility:download" alternative-text="Download"
+                                                    title="Download" label="Download" value={item.downloadLink}
+                                                    onclick={handleDownload}>
+                                                </lightning-button-icon>
+                                            </template>
+                                            <template if:true={item.webViewLink}>
+                                                <lightning-button-icon class="slds-p-around_small"
+                                                    icon-name="utility:preview" value={item.webViewLink}
+                                                    alternative-text="Preview" title="Preview" label="Preview"
+                                                    onclick={handlePreview}>
+                                                </lightning-button-icon>
+                                            </template>
+                                            <template if:true={item.canRename}>
+                                                <lightning-button-icon class="slds-p-around_small"
+                                                    icon-name="utility:edit" value={item.mimeType} name={item.id}
+                                                    label="Rename" onclick={handleRename}>
+                                                </lightning-button-icon>
+                                            </template>
+                                            <template if:true={item.showInput}>
+                                                <lightning-input class="slds-p-around_small" type="text"
+                                                    onfocusout={handleFocusOut} label="Enter File Name"
+                                                    onchange={handleChange}></lightning-input>
+                                                <div class="slds-clearfix">
+                                                    <lightning-button class="slds-float_left slds-p-around_small"
+                                                        variant="brand outline" label="Cancel" onclick={handleCancel}>
+                                                    </lightning-button>
+                                                    <template if:true={showButton}>
+                                                        <lightning-button class="slds-float_right slds-p-around_small"
+                                                            variant="brand" label="Save" onclick={handleSave}>
+                                                        </lightning-button>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </lightning-card>
+                                </div>
+                            </lightning-layout-item>
+                        </template>
+                    </template>
+                    <template if:false={searchedDataLen}>
+                        <p class="slds-text-heading_medium slds-p-around_small slds-align_absolute-center"
+                            style="font-weight: bold;">No Search Results Found</p>
+                    </template>
+                </lightning-layout>
+            </template>
+            <template if:false={loaded}>
+                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            </template>
+
+        </template>
+    </div>
+</template>
